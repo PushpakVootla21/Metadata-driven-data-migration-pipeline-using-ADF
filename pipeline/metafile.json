@@ -1,0 +1,2 @@
+[{"TABLE_NAME":"categories","WaterMark_Column":"updated_at","MERGE_KEY":["category_id"]},
+{"TABLE_NAME":"customers","WaterMark_Column":"updated_at","MERGE_KEY":["customer_id"]}]
