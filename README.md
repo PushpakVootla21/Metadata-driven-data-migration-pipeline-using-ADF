@@ -146,7 +146,7 @@ You’ll simulate an on-premises environment using your local SQL Server.
 2. Connect to your local SQL Server instance (usually `localhost` or `.\SQLEXPRESS`).
 3. Right-click **Databases** > **New Database...**.
 4. Name it, e.g., `OnPremDemoDB`, and click **OK**.
-5. Use the provided scripts in the `scripts/` folder to create tables and insert sample data.
+5. Use the provided scripts in the `scripts/Table Scripts.sql` folder to create tables and insert sample data.
 
 ---
 
@@ -169,3 +169,86 @@ ADLS Gen2 will store your metadata file for the pipeline.
 4. Click into the container and upload your `metafile.json` from the `metadata/` folder.
 
 ---
+
+### 6. Configure Lookup Activity for Metadata JSON in ADLS Gen2
+
+This step sets up your pipeline to read the metadata JSON file from Azure Data Lake Storage Gen2 using a Lookup activity.
+
+### 6.1 Create a Service Principal and Assign Blob Access Role for ADF
+
+To allow Azure Data Factory to access your ADLS Gen2 storage, you need to create a Service Principal (an Azure AD App Registration) and assign it the necessary role.
+
+#### 6.1.1 Create a Service Principal (App Registration)
+
+1. Go to the [Azure Portal](https://portal.azure.com/).
+2. Search for **Azure Active Directory** in the top search bar and select it.
+3. In the left menu, click **App registrations** > **+ New registration**.
+4. Enter a name, e.g., `adf-access-sp`.
+5. Leave the default settings and click **Register**.
+6. After registration, note down the **Application (client) ID** and **Directory (tenant) ID**.
+
+#### 6.1.2 Generate a Client Secret
+
+1. In your App Registration, go to **Certificates & secrets**.
+2. Click **+ New client secret**.
+3. Add a description (e.g., `adf-secret`) and choose an expiry period.
+4. Click **Add**.
+5. Copy the **Value** immediately and save it securely (you’ll need it for ADF).
+
+#### 6.1.3 Assign Blob Storage Role to the Service Principal
+
+1. Go to your **Storage account** (ADLS Gen2) in the Azure Portal.
+2. In the left menu, click **Access control (IAM)**.
+3. Click **+ Add** > **Add role assignment**.
+4. For **Role**, select **Storage Blob Data Contributor** (or **Storage Blob Data Owner** if full access is needed).
+5. In **Assign access to**, select **User, group, or service principal**.
+6. Click **Select members**, search for your app registration name (e.g., `adf-access-sp`), and select it.
+7. Click **Review + assign**.
+
+---
+
+Now, you can use the **Tenant ID**, **Client ID**, and **Client Secret** in your ADF linked service to authenticate and access ADLS Gen2 securely.
+
+#### 6.2. Create a Linked Service to ADLS Gen2
+
+You’ll need a linked service in Azure Data Factory to connect to your ADLS Gen2 account using a service principal.
+
+**How to create:**
+1. In your Azure Data Factory, go to **Manage** (the wrench icon).
+2. Click **Linked services** > **+ New**.
+3. Select **Azure Data Lake Storage Gen2**.
+4. For **Authentication method**, choose **Service principal**.
+5. Enter your **ADLS Gen2 account name**, **Tenant ID**, **Service principal client ID**, and **Client secret**.
+6. Test the connection and click **Create**.
+
+#### 6.3. Create a Dataset for the Metadata JSON
+
+You need a dataset that points to your metadata JSON file in ADLS Gen2.
+
+**How to create:**
+1. In ADF, go to the **Author** tab.
+2. Under **Datasets**, click **+ New dataset**.
+3. Choose **Azure Data Lake Storage Gen2** > **JSON**.
+4. Select the linked service you created above.
+5. Browse and select your `metafile.json` file in the `metadata` container.
+6. Name your dataset (e.g., `ds_metadata_json`) and click **OK**.
+
+#### 6.4. Add a Lookup Activity in Your Pipeline
+
+The Lookup activity will read the metadata JSON file.
+
+**How to configure:**
+1. In your pipeline, drag a **Lookup** activity onto the canvas.
+2. Set the **Source dataset** to the dataset you just created (`ds_metadata_json`).
+3. In the **Settings** tab:
+    - **First row only**: Enable this option (since your JSON is an array with one row per table, this will return the array itself).
+    - **Recursively**: Disable this option (to avoid searching all folders).
+4. (Optional) Rename the activity to `Lookup_Metadata`.
+
+**Summary of options:**
+- **First row only**: ✔️ (Enabled)
+- **Recursively**: ❌ (Disabled)
+
+---
+
+You can now use the output of the Lookup activity to drive further activities in your pipeline, such as ForEach to iterate over tables.
