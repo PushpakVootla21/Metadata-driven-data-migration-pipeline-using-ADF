@@ -23,7 +23,7 @@ This project implements a **metadata-driven data migration pipeline** using **Az
 ## 🛠️ Solution Architecture
 
 ### 1. Metadata-Driven Pipeline Design
-- A control table stores metadata about source and destination tables.
+- A JSON file in ADLS Gen2 object store holds metadata about source and destination tables.
 - The pipeline reads this metadata to dynamically process each table.
 - New tables can be added or removed without modifying the pipeline logic.
 
