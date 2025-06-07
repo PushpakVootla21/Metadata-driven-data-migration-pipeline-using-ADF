@@ -455,20 +455,21 @@ Datasets in Azure Data Factory define the structure and location of your data. F
 #### 10.3. Using Parameterized Datasets in Activities
 
 When configuring your **Copy Data** activity inside the ForEach loop:
+
 - Set the **TableName** parameter for both source and sink datasets to:
   ```
-  @{item().sourceTable}
+  @{item().TABLE_NAME}
   ```
-  and
+- Set the **MergeKey** parameter to:
   ```
-  @{item().destinationTable}
+  @{item().MERGE_KEY}
+  ```
+- Set the **WaterMark_Column** parameter to:
+  ```
+  @{item().WaterMark_Column}
   ```
 
-This ensures the correct table name is used for each iteration, enabling dynamic and scalable data movement.
-
----
-
----
+This ensures the correct table name and keys are used for each iteration, enabling dynamic and scalable data movement.
 
 ### 11. 📄 Metadata JSON Structure
 
@@ -549,6 +550,12 @@ CREATE TABLE watermarktable (
 ```
 - For initial setup, insert a row for each table with a very old date (e.g., `'1900-01-01'`).
 
+**Initial Watermark Setup Example:**
+```sql
+INSERT INTO watermarktable (TableName, WatermarkValue) VALUES ('categories', '1900-01-01');
+INSERT INTO watermarktable (TableName, WatermarkValue) VALUES ('customers', '1900-01-01');
+```
+
 **Stored Procedure:**
 ```sql
 CREATE PROCEDURE usp_write_watermark (@LastModifiedtime datetime, @TableName sysname )
@@ -627,4 +634,4 @@ END
 
 ---
 
-![ADF Pipeline Flow](images/adf-pipeline-flow.png)
+![ADF Pipeline Flow: Lookup_Metadata → ForEach → Lookup_oldwm → Lookup_onprem_newwm → Copy Data → Stored Procedure](images/adf-pipeline-flow.png)
