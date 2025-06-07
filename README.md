@@ -1,4 +1,4 @@
-# metadata-driven-adf-pipeline
+# Metadata-driven-adf-pipeline
 
 ## 🚀 Project Overview
 
