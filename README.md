@@ -634,4 +634,10 @@ END
 
 ---
 
+<!-- Add your real ADF project screenshot here -->
+![ADF Project - Real Pipeline Screenshot](images/adf_project.png)
+*Figure: Actual Azure Data Factory pipeline as implemented in the project.*
+
+<!-- (Optional) Keep your conceptual pipeline flow image as well -->
 ![ADF Pipeline Flow: Lookup_Metadata → ForEach → Lookup_oldwm → Lookup_onprem_newwm → Copy Data → Stored Procedure](images/adf-pipeline-flow.png)
+*Figure: Conceptual flow of the metadata-driven ADF pipeline.*
