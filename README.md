@@ -453,9 +453,161 @@ This ensures the correct table name is used for each iteration, enabling dynamic
 
 ---
 
-**Tip:**  
-Parameterizing datasets allows you to use a single dataset for multiple tables, making your pipeline scalable and easier to maintain.
+---
+
+### 11. 📄 Metadata JSON Structure
+
+Your metadata JSON should look like this:
+
+```json
+[
+  {
+    "TABLE_NAME": "categories",
+    "WaterMark_Column": "updated_at",
+    "MERGE_KEY": ["category_id"]
+  },
+  {
+    "TABLE_NAME": "customers",
+    "WaterMark_Column": "updated_at",
+    "MERGE_KEY": ["customer_id"]
+  }
+]
+```
+
+- **TABLE_NAME**: Name of the table to migrate.
+- **WaterMark_Column**: The column used for incremental loading (watermark).
+- **MERGE_KEY**: Array of key columns used for upsert/merge operations.
 
 ---
 
-Next, you will configure the Copy Data activity to use these parameterized datasets for dynamic data movement.
+### 12. Create Parameterized Datasets for On-Premises and Cloud SQL Servers
+
+Datasets in Azure Data Factory define the structure and location of your data. For a metadata-driven pipeline, you should **parameterize the table name, watermark column, and merge key** so the same dataset can be reused for different tables.
+
+#### 12.1. Dataset for On-Premises SQL Server (Source)
+
+- **Linked service**: `LS_OnPrem_SQLServer`
+- **Parameters**:  
+  - `TableName` (string)
+  - `WaterMark_Column` (string)
+  - `MergeKey` (array or string)
+- **Table name**: `@dataset().TableName`
+
+#### 12.2. Dataset for Azure SQL Database (Sink)
+
+- **Linked service**: `LS_Azure_SQLDB`
+- **Parameters**:  
+  - `TableName` (string)
+  - `MergeKey` (array or string)
+- **Table name**: `@dataset().TableName`
+
+---
+
+### 13. Using Parameterized Datasets in Activities
+
+When configuring your **Copy Data** activity inside the ForEach loop:
+- Set the **TableName** parameter for both source and sink datasets to:
+  ```
+  @{item().TABLE_NAME}
+  ```
+- Set the **MergeKey** parameter (if you add it to your dataset) to:
+  ```
+  @{item().MERGE_KEY}
+  ```
+- Set the **WaterMark_Column** parameter (if needed) to:
+  ```
+  @{item().WaterMark_Column}
+  ```
+
+---
+
+### 14. Watermark Table and Stored Procedure
+
+Create a watermark table and stored procedure in your **Azure SQL Database** to track and update the last processed watermark value for each table.
+
+**Watermark Table:**
+```sql
+CREATE TABLE watermarktable (
+    TableName sysname PRIMARY KEY,
+    WatermarkValue datetime
+)
+```
+- For initial setup, insert a row for each table with a very old date (e.g., `'1900-01-01'`).
+
+**Stored Procedure:**
+```sql
+CREATE PROCEDURE usp_write_watermark (@LastModifiedtime datetime, @TableName sysname )
+AS
+BEGIN
+    UPDATE watermarktable
+    SET WatermarkValue = @LastModifiedtime WHERE TableName = @TableName
+END
+```
+
+---
+
+### 15. Pipeline Activities for Incremental Load
+
+#### 15.1. Lookup Old Watermark
+
+- **Purpose:** Get the last processed watermark value for the current table from Azure SQL Database.
+- **Query:**
+  ```sql
+  SELECT WatermarkValue AS WM FROM watermarktable WHERE TableName = '@{item().TABLE_NAME}'
+  ```
+- **Output:** Used as the lower bound in the source query.
+
+#### 15.2. Lookup New Watermark (from Source)
+
+- **Purpose:** Get the latest watermark value from the source (on-premises) table.
+- **Query:**
+  ```sql
+  SELECT MAX(@{item().WaterMark_Column}) as NEWWM FROM @{item().TABLE_NAME}
+  ```
+- **Output:** Used as the upper bound in the source query and to update the watermark table after the copy.
+
+#### 15.3. Copy Data Activity
+
+- **Purpose:** Copy only new or updated records from source to destination.
+- **Source dataset parameters:**
+  - **TableName**: `@{item().TABLE_NAME}`
+  - **WaterMark_Column**: `@{item().WaterMark_Column}`
+  - **MergeKey**: `@{item().MERGE_KEY}`
+- **Sink dataset parameters:**
+  - **TableName**: `@{item().TABLE_NAME}`
+  - **MergeKey**: `@{item().MERGE_KEY}`
+
+- **Source Query:**
+  ```sql
+  SELECT * FROM @{item().TABLE_NAME}
+  WHERE @{item().WaterMark_Column} > '@{activity('Lookup_oldwm').output.firstRow.WM}'
+    AND @{item().WaterMark_Column} <= '@{activity('Lookup_onprem_newwm').output.firstRow.NEWWM}'
+  ```
+
+#### 15.4. Stored Procedure Activity
+
+- **Purpose:** Update the watermark table in Azure SQL Database after a successful copy.
+- **Linked service:** `LS_Azure_SQLDB`
+- **Stored procedure name:** `usp_write_watermark`
+- **Parameters:**
+  - **@LastModifiedtime**: `@{activity('Lookup_onprem_newwm').output.firstRow.NEWWM}`
+  - **@TableName**: `@{item().TABLE_NAME}`
+
+---
+
+### 16. Pipeline Flow Summary
+
+1. **ForEach** iterates over each table in the metadata JSON.
+2. **Lookup_oldwm** gets the last processed watermark value from Azure SQL Database.
+3. **Lookup_onprem_newwm** gets the latest watermark value from the source table.
+4. **Copy Data** copies only records newer than the old watermark and up to the new watermark.
+5. **Stored Procedure** updates the watermark table with the new value for the next run.
+
+---
+
+**Tip:**  
+- Set initial watermark values to a very old date for the first run.
+- All table names, watermark columns, and keys are passed from the JSON file, making the pipeline flexible and easy to extend.
+- Ensure your stored procedure and watermark table exist and are accessible in Azure SQL Database.
+
+---
