@@ -39,3 +39,47 @@ This project implements a **metadata-driven data migration pipeline** using **Az
 ### 4. Data Consistency Checks
 - Post-load validation using row counts and checksums.
 - Logging and alerting for mismatches or failures.
+
+---
+
+## 🚦 Getting Started
+
+1. Clone this repository.
+2. Upload the metadata JSON file to your ADLS Gen2 container.
+3. Configure linked services in Azure Data Factory for source and destination.
+4. Import the pipeline template and set parameters as needed.
+5. Trigger the pipeline and monitor execution.
+
+---
+
+## 📄 Metadata JSON Example
+
+```json
+[
+  {
+    "sourceTable": "dbo.Customers",
+    "destinationTable": "dbo.Customers",
+    "watermarkColumn": "LastModifiedDate"
+  },
+  {
+    "sourceTable": "dbo.Orders",
+    "destinationTable": "dbo.Orders",
+    "watermarkColumn": "LastModifiedDate"
+  }
+]
+```
+
+---
+
+## 📁 Folder Structure
+
+```
+/
+├── README.md
+├── pipeline/
+│   └── adf_pipeline.json
+├── metadata/
+│   └── tables_metadata.json
+└── scripts/
+    └── setup.sql
+```
