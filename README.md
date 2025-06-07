@@ -124,6 +124,17 @@ Azure SQL Server is the logical server that will host your Azure SQL Database.
 3. Enter your server name (e.g., `adf-sqlserver-demo.database.windows.net`), admin username, and password.
 4. Click **Connect**.
 
+### 3.1. Create Tables in Azure SQL Database
+
+After connecting to your Azure SQL Server using Azure Data Studio:
+
+1. Open Azure Data Studio and connect to your Azure SQL Server.
+2. Select or create a database (e.g., `CloudDemoDB`).
+3. Open the `scripts/Table Scripts.sql` file from this repository.
+4. Run the script to create the required tables in your Azure SQL Database.
+
+> **Tip:** Ensure the table structure matches your on-premises SQL Server for seamless data migration.
+
 ---
 
 ### 4. Set Up Database in On-Prem SQL Server & Connect with SSMS
