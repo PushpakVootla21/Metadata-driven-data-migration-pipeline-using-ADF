@@ -252,3 +252,75 @@ The Lookup activity will read the metadata JSON file.
 ---
 
 You can now use the output of the Lookup activity to drive further activities in your pipeline, such as ForEach to iterate over tables.
+
+### 7. Add a ForEach Activity to Iterate Over Tables in Metadata
+
+The ForEach activity will loop through each table defined in your metadata JSON, allowing you to perform actions (like copy) for each table dynamically.
+
+#### 7.1. Add the ForEach Activity
+
+1. In your pipeline, drag a **ForEach** activity onto the canvas.
+2. Connect the output of the **Lookup** activity to the **ForEach** activity.
+
+#### 7.2. Configure ForEach Settings
+
+- Go to the **Settings** tab of the ForEach activity.
+- **Items**: Enter the following expression to reference the array of tables from the Lookup activity output:
+  ```
+  @activity('Lookup_Metadata').output.value
+  ```
+  > Replace `Lookup_Metadata` with the actual name of your Lookup activity if different.
+
+- **Sequential**: Uncheck this option to allow parallel execution (recommended for performance).
+
+#### 7.3. Summary of Settings
+
+- **Items**:  
+  ```
+  @activity('Lookup_Metadata').output.value
+  ```
+- **Sequential**: ❌ (Unchecked)
+
+---
+
+Now, inside the ForEach activity, you can add activities (like Copy Data) that will execute for each table defined in your metadata JSON.
+
+### 8. Understanding Integration Runtimes (IR) in Azure Data Factory
+
+Integration Runtime (IR) is the compute infrastructure used by Azure Data Factory to provide data integration capabilities across different network environments.
+
+#### 8.1. Types of Integration Runtimes
+
+- **Azure Integration Runtime**  
+  - Fully managed by Microsoft.
+  - Used for data movement and transformation between cloud data stores (e.g., Azure SQL Database, Azure Blob Storage).
+  - No installation required.
+
+- **Self-Hosted Integration Runtime (SHIR)**  
+  - Installed on your own on-premises or virtual machine.
+  - Required for accessing data sources that are behind a firewall or within a private network (e.g., on-premises SQL Server).
+  - Acts as a secure gateway between your local environment and Azure Data Factory.
+
+#### 8.2. When to Use Each IR
+
+- Use **Azure IR** for connecting to cloud resources such as Azure SQL Database or Azure Data Lake Storage.
+- Use **Self-Hosted IR** when you need to connect to on-premises data sources, such as your local SQL Server instance.
+
+#### 8.3. Installing Self-Hosted Integration Runtime
+
+To connect Azure Data Factory to your on-premises SQL Server, you must install the Self-Hosted IR on a machine that can access your SQL Server.
+
+**Installation Steps:**
+1. In Azure Data Factory, go to **Manage** (wrench icon) > **Integration runtimes**.
+2. Click **+ New** and select **Self-Hosted**.
+3. Enter a name (e.g., `OnPrem-SHIR`) and create the IR.
+4. Download the installer provided by Azure.
+5. Run the installer on your local machine (the one with access to your SQL Server).
+6. During installation, provide the authentication key from the Azure portal.
+7. After installation, ensure the IR status is **Running** in the Azure portal.
+
+> **Note:** The Self-Hosted IR must always be running on your local machine for Azure Data Factory to access your on-premises data.
+
+---
+
+In the next step, you will configure your linked services and datasets to use the appropriate Integration Runtime for each data source.
