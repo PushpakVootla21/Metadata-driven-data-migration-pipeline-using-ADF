@@ -606,6 +606,22 @@ END
     AND @{item().WaterMark_Column} <= '@{activity('Lookup_onprem_newwm').output.firstRow.NEWWM}'
   ```
 
+    ## ✅ Data Consistency Verification in Copy Activity
+  
+  Azure Data Factory's **Copy Data** activity includes a built-in option for basic data consistency verification:
+  
+  - In the **Settings** tab of the Copy Data activity, enable **"Data consistency verification"** (sometimes labeled as "Enable data consistency verification").
+  - When enabled, ADF will automatically compare the number of rows read from the source with the number of rows written to the sink.
+  - If there is a mismatch, the activity will fail and log an error.
+  
+  > **Note:**  
+  > This feature only checks row counts, not the actual data content or checksums. For advanced validation (like checksums or custom queries), add additional activities after the copy step.
+  
+  **Reference:**  
+  - [Copy Activity - Data Consistency Verification](https://learn.microsoft.com/en-us/azure/data-factory/copy-activity-overview#data-consistency-verification)
+  
+  ---
+
 #### 15.4. Stored Procedure Activity
 
 - **Purpose:** Update the watermark table in Azure SQL Database after a successful copy.
