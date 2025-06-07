@@ -388,3 +388,74 @@ Always test your connections before proceeding. If you encounter issues, check f
 ---
 
 Next, you will create datasets that use these linked services for your pipeline activities.
+
+### 10. Create Parameterized Datasets for On-Premises and Cloud SQL Servers
+
+Datasets in Azure Data Factory define the structure and location of your data. For a metadata-driven pipeline, you should **parameterize the table name** so the same dataset can be reused for different tables.
+
+#### 10.1. Dataset for On-Premises SQL Server (Source)
+
+**How to create:**
+1. In ADF, go to the **Author** tab.
+2. Under **Datasets**, click **+ New dataset**.
+3. Select **SQL Server**.
+4. Choose your linked service (`LS_OnPrem_SQLServer`).
+5. In the **Table name** field, click **Add dynamic content**.
+6. Click **+ New** next to Parameters and add a parameter, e.g., `TableName`.
+7. Set the **Table name** value to:
+   ```
+   @{dataset().TableName}
+   ```
+8. Name your dataset, e.g., `ds_OnPrem_SQLTable`, and click **OK**.
+
+**Summary:**
+- **Linked service**: LS_OnPrem_SQLServer
+- **Parameter**: TableName (string)
+- **Table name**: `@dataset().TableName`
+
+---
+
+#### 10.2. Dataset for Azure SQL Database (Sink)
+
+**How to create:**
+1. In ADF, go to the **Author** tab.
+2. Under **Datasets**, click **+ New dataset**.
+3. Select **Azure SQL Database**.
+4. Choose your linked service (`LS_Azure_SQLDB`).
+5. In the **Table name** field, click **Add dynamic content**.
+6. Click **+ New** next to Parameters and add a parameter, e.g., `TableName`.
+7. Set the **Table name** value to:
+   ```
+   @{dataset().TableName}
+   ```
+8. Name your dataset, e.g., `ds_Azure_SQLTable`, and click **OK**.
+
+**Summary:**
+- **Linked service**: LS_Azure_SQLDB
+- **Parameter**: TableName (string)
+- **Table name**: `@dataset().TableName`
+
+---
+
+#### 10.3. Using Parameterized Datasets in Activities
+
+When configuring your **Copy Data** activity inside the ForEach loop:
+- Set the **TableName** parameter for both source and sink datasets to:
+  ```
+  @{item().sourceTable}
+  ```
+  and
+  ```
+  @{item().destinationTable}
+  ```
+
+This ensures the correct table name is used for each iteration, enabling dynamic and scalable data movement.
+
+---
+
+**Tip:**  
+Parameterizing datasets allows you to use a single dataset for multiple tables, making your pipeline scalable and easier to maintain.
+
+---
+
+Next, you will configure the Copy Data activity to use these parameterized datasets for dynamic data movement.
