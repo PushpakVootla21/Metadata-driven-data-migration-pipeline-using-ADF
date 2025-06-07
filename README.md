@@ -626,8 +626,5 @@ END
 - Ensure your stored procedure and watermark table exist and are accessible in Azure SQL Database.
 
 ---
-<!-- Mermaid code block for easy editing -->
-```mermaid
-flowchart TD
-    ...
+
 ![ADF Pipeline Flow](images/adf-pipeline-flow.png)
