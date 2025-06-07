@@ -20,6 +20,21 @@ This project implements a **metadata-driven data migration pipeline** using **Az
 
 ---
 
+- [🚀 Project Overview](#project-overview)
+- [🧩 Use Case](#use-case)
+- [🛠️ Solution Architecture](#solution-architecture)
+- [🚦 Getting Started](#getting-started)
+- [🏗️ Prerequisites](#prerequisites)
+- [📁 Folder Structure](#folder-structure)
+- [📝 Step-by-Step Setup Guide](#step-by-step-setup-guide)
+- [Understanding Integration Runtimes (IR)](#8-understanding-integration-runtimes-ir-in-azure-data-factory)
+- [Configure Linked Services](#9-configure-linked-services-for-on-premises-and-cloud-sql-servers)
+- [Create Parameterized Datasets](#12-create-parameterized-datasets-for-on-premises-and-cloud-sql-servers)
+- [Metadata JSON Structure](#11-metadata-json-structure)
+- [Watermark Table and Stored Procedure](#14-watermark-table-and-stored-procedure)
+- [Pipeline Activities for Incremental Load](#15-pipeline-activities-for-incremental-load)
+- [Pipeline Flow Summary](#16-pipeline-flow-summary)
+
 ## 🛠️ Solution Architecture
 
 ### 1. Metadata-Driven Pipeline Design
@@ -611,3 +626,8 @@ END
 - Ensure your stored procedure and watermark table exist and are accessible in Azure SQL Database.
 
 ---
+<!-- Mermaid code block for easy editing -->
+```mermaid
+flowchart TD
+    ...
+![ADF Pipeline Flow](images/adf-pipeline-flow.png)
