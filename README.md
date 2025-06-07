@@ -76,10 +76,11 @@ This project implements a **metadata-driven data migration pipeline** using **Az
 ```
 /
 ├── README.md
-├── pipeline/
-│   └── adf_pipeline.json
 ├── metadata/
-│   └── tables_metadata.json
+│   └── metafile.json
 └── scripts/
-    └── setup.sql
+    ├── Table Scripts.sql
+    ├── Insert Scripts.sql
+    └── Incremental Scripts.sql
+```
 ```
