@@ -641,3 +641,46 @@ END
 <!-- (Optional) Keep your conceptual pipeline flow image as well -->
 ![ADF Pipeline Flow: Lookup_Metadata → ForEach → Lookup_oldwm → Lookup_onprem_newwm → Copy Data → Stored Procedure](images/adf-pipeline-flow.png)
 *Figure: Conceptual flow of the metadata-driven ADF pipeline.*
+
+## ⏰ Pipeline Triggers
+
+You can execute the metadata-driven pipeline in Azure Data Factory using:
+
+- **Manual Trigger:**  
+  Start the pipeline on-demand from the ADF UI by clicking "Add Trigger" > "Trigger Now".
+
+- **Scheduled Trigger:**  
+  Automate pipeline runs by creating a schedule (e.g., daily, hourly).
+  1. In ADF, go to the pipeline and click "Add Trigger" > "New/Edit".
+  2. Choose "Schedule" and set the desired frequency and start time.
+  3. Save and activate the trigger.
+
+- **Event-Based Trigger:**  
+  Run the pipeline in response to events (e.g., file arrival in ADLS).  
+  1. Go to "Manage" > "Triggers" > "New".
+  2. Select "Event" and configure the event source and conditions.
+
+> **Tip:**  
+> Use scheduled triggers for regular incremental loads, and event-based triggers for near real-time scenarios.
+
+---
+
+
+## 🛠️ Troubleshooting
+
+- **Self-Hosted IR not running:** Ensure the IR service is running and connected to Azure.
+- **Connection errors:** Check firewall, credentials, and network connectivity.
+- **Permission issues:** Verify service principal roles on storage and databases.
+- **Pipeline failures:** Review activity output and error messages in ADF Monitor.
+
+> **Security Tip:**  
+> Store sensitive credentials (like client secrets) in Azure Key Vault and reference them in your linked services.
+
+## 🚧 CI/CD Integration (Coming Soon)
+This project will include Azure DevOps pipeline templates for automated deployment in a future release.
+
+## 📚 References
+
+- [Azure Data Factory Documentation](https://learn.microsoft.com/en-us/azure/data-factory/)
+- [ADF Triggers](https://learn.microsoft.com/en-us/azure/data-factory/how-to-create-schedule-trigger)
+- [ADF Security Best Practices](https://learn.microsoft.com/en-us/azure/data-factory/data-movement-security-considerations)
