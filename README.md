@@ -324,3 +324,67 @@ To connect Azure Data Factory to your on-premises SQL Server, you must install t
 ---
 
 In the next step, you will configure your linked services and datasets to use the appropriate Integration Runtime for each data source.
+
+### 9. Configure Linked Services for On-Premises and Cloud SQL Servers
+
+Linked services in Azure Data Factory define the connection information needed for ADF to connect to your data sources. You will need two linked services: one for your on-premises SQL Server and one for your Azure SQL Database.
+
+#### 9.1. Linked Service for On-Premises SQL Server (Self-Hosted IR)
+
+This linked service connects ADF to your local SQL Server using the Self-Hosted Integration Runtime.
+
+**How to create:**
+1. In Azure Data Factory, go to **Manage** (wrench icon) > **Linked services**.
+2. Click **+ New**.
+3. Search for and select **SQL Server**.
+4. Fill in the following details:
+   - **Name**: e.g., `LS_OnPrem_SQLServer`
+   - **Server name**: The name or IP address of your local SQL Server (e.g., `localhost` or `.\SQLEXPRESS`)
+   - **Database name**: The name of your on-premises database (e.g., `OnPremDemoDB`)
+   - **Authentication type**: Choose `SQL authentication` or `Windows authentication` based on your setup.
+   - **Username/Password**: Enter your SQL Server credentials.
+   - **Connect via Integration Runtime**: Select your **Self-Hosted IR** (e.g., `OnPrem-SHIR`)
+5. Click **Test connection** to ensure it works, then click **Create**.
+
+> **Key Option:**  
+> - **Connect via Integration Runtime**: Must be set to your Self-Hosted IR for on-premises access.
+
+---
+
+#### 9.2. Linked Service for Azure SQL Database (Azure IR)
+
+This linked service connects ADF to your Azure SQL Database using the default Azure Integration Runtime.
+
+**How to create:**
+1. In Azure Data Factory, go to **Manage** > **Linked services**.
+2. Click **+ New**.
+3. Search for and select **Azure SQL Database**.
+4. Fill in the following details:
+   - **Name**: e.g., `LS_Azure_SQLDB`
+   - **Server name**: Your Azure SQL Server name (e.g., `adf-sqlserver-demo.database.windows.net`)
+   - **Database name**: The name of your Azure SQL Database (e.g., `CloudDemoDB`)
+   - **Authentication type**: Usually `SQL authentication`
+   - **Username/Password**: Enter your Azure SQL admin credentials.
+   - **Connect via Integration Runtime**: Leave as **AutoResolveIntegrationRuntime** (default Azure IR)
+5. Click **Test connection** to ensure it works, then click **Create**.
+
+> **Key Option:**  
+> - **Connect via Integration Runtime**: Leave as default (Azure IR) for cloud resources.
+
+---
+
+**Summary Table:**
+
+| Linked Service         | Data Source           | Integration Runtime         | Authentication         |
+|-----------------------|-----------------------|----------------------------|------------------------|
+| LS_OnPrem_SQLServer   | On-prem SQL Server    | Self-Hosted IR (OnPrem-SHIR) | SQL/Windows Auth       |
+| LS_Azure_SQLDB        | Azure SQL Database    | Azure IR (default)         | SQL Auth               |
+
+---
+
+**Tip:**  
+Always test your connections before proceeding. If you encounter issues, check firewall settings, credentials, and that your Self-Hosted IR is running and reachable.
+
+---
+
+Next, you will create datasets that use these linked services for your pipeline activities.
